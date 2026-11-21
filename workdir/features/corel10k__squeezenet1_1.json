@@ -1,0 +1,11 @@
+{
+  "dataset": "corel10k",
+  "model": "squeezenet1_1",
+  "n_images": 10000,
+  "dim": 512,
+  "params_millions": 0.72,
+  "device": "cpu",
+  "temps_inference_s": 79.49,
+  "ms_par_image": 7.949,
+  "manifest_md5": "412d8e8cfb"
+}

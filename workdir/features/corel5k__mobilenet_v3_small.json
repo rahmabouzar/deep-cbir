@@ -1,0 +1,11 @@
+{
+  "dataset": "corel5k",
+  "model": "mobilenet_v3_small",
+  "n_images": 5000,
+  "dim": 576,
+  "params_millions": 0.93,
+  "device": "cpu",
+  "temps_inference_s": 15.29,
+  "ms_par_image": 3.058,
+  "manifest_md5": "44d973c35b"
+}

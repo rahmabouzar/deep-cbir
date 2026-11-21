@@ -1,0 +1,11 @@
+{
+  "dataset": "paris6k",
+  "model": "resnet50",
+  "n_images": 6392,
+  "dim": 2048,
+  "params_millions": 23.51,
+  "device": "cpu",
+  "temps_inference_s": 431.5,
+  "ms_par_image": 67.506,
+  "manifest_md5": "456d29ab23"
+}

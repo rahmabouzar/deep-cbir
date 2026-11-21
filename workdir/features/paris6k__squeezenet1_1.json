@@ -1,0 +1,11 @@
+{
+  "dataset": "paris6k",
+  "model": "squeezenet1_1",
+  "n_images": 6392,
+  "dim": 512,
+  "params_millions": 0.72,
+  "device": "cpu",
+  "temps_inference_s": 54.32,
+  "ms_par_image": 8.498,
+  "manifest_md5": "456d29ab23"
+}

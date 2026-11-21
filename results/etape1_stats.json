@@ -1,0 +1,117 @@
+{
+  "corel1k": {
+    "nom": "Corel-1K",
+    "n_images": 1000,
+    "n_classes": 10,
+    "extensions": {
+      "jpg": 1000
+    },
+    "formats": {
+      "JPEG": 1000
+    },
+    "largeur_moy": 358.4,
+    "hauteur_moy": 281.6,
+    "largeur_min": 256,
+    "largeur_max": 384,
+    "taille_moy_ko": 29.15,
+    "taille_totale_mo": 28.5,
+    "images_par_classe_min": 100,
+    "images_par_classe_max": 100,
+    "preset": "full",
+    "illisibles": 0,
+    "n_disponibles": 1000,
+    "couverture_pct": 100.0
+  },
+  "corel5k": {
+    "nom": "Corel-5K",
+    "n_images": 5000,
+    "n_classes": 50,
+    "extensions": {
+      "jpeg": 5000
+    },
+    "formats": {
+      "JPEG": 5000
+    },
+    "largeur_moy": 175.9,
+    "hauteur_moy": 144.1,
+    "largeur_min": 128,
+    "largeur_max": 192,
+    "taille_moy_ko": 13.23,
+    "taille_totale_mo": 64.6,
+    "images_par_classe_min": 100,
+    "images_par_classe_max": 100,
+    "preset": "full",
+    "illisibles": 0,
+    "n_disponibles": 5000,
+    "couverture_pct": 100.0
+  },
+  "corel10k": {
+    "nom": "Corel-10K",
+    "n_images": 10000,
+    "n_classes": 100,
+    "extensions": {
+      "jpeg": 10000
+    },
+    "formats": {
+      "JPEG": 10000
+    },
+    "largeur_moy": 123.8,
+    "hauteur_moy": 102.2,
+    "largeur_min": 80,
+    "largeur_max": 384,
+    "taille_moy_ko": 4.09,
+    "taille_totale_mo": 40.0,
+    "images_par_classe_min": 100,
+    "images_par_classe_max": 100,
+    "preset": "full",
+    "illisibles": 0,
+    "n_disponibles": 10000,
+    "couverture_pct": 100.0
+  },
+  "cifar100": {
+    "nom": "CIFAR-100 (test)",
+    "n_images": 10000,
+    "n_classes": 100,
+    "extensions": {
+      "png": 10000
+    },
+    "formats": {
+      "PNG": 10000
+    },
+    "largeur_moy": 32.0,
+    "hauteur_moy": 32.0,
+    "largeur_min": 32,
+    "largeur_max": 32,
+    "taille_moy_ko": 2.19,
+    "taille_totale_mo": 21.4,
+    "images_par_classe_min": 100,
+    "images_par_classe_max": 100,
+    "preset": "full",
+    "illisibles": 0,
+    "n_disponibles": 10000,
+    "couverture_pct": 100.0
+  },
+  "paris6k": {
+    "nom": "Paris6k",
+    "n_images": 6392,
+    "n_classes": 12,
+    "extensions": {
+      "jpg": 6392
+    },
+    "formats": {
+      "JPEG": 6392
+    },
+    "largeur_moy": 914.8,
+    "hauteur_moy": 842.2,
+    "largeur_min": 217,
+    "largeur_max": 1024,
+    "taille_moy_ko": 399.61,
+    "taille_totale_mo": 2494.4,
+    "images_par_classe_min": 147,
+    "images_par_classe_max": 1497,
+    "preset": "full",
+    "illisibles": 20,
+    "n_disponibles": 6412,
+    "couverture_pct": 99.7
+  }
+}

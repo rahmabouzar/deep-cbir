@@ -1,0 +1,11 @@
+{
+  "dataset": "corel1k",
+  "model": "resnet18",
+  "n_images": 1000,
+  "dim": 512,
+  "params_millions": 11.18,
+  "device": "cpu",
+  "temps_inference_s": 22.98,
+  "ms_par_image": 22.975,
+  "manifest_md5": "669db710fa"
+}

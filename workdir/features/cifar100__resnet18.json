@@ -1,0 +1,11 @@
+{
+  "dataset": "cifar100",
+  "model": "resnet18",
+  "n_images": 10000,
+  "dim": 512,
+  "params_millions": 11.18,
+  "device": "cpu",
+  "temps_inference_s": 250.55,
+  "ms_par_image": 25.055,
+  "manifest_md5": "668a044149"
+}
