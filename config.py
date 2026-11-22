@@ -1,10 +1,11 @@
 """Configuration centrale du mini-projet CBIR (IRDM - Master 2 SID, USTO-MB)."""
 from pathlib import Path
+import os
 
 BASE = Path(__file__).resolve().parent
 # Structure : MiniProject/{CIFAR100,Corel-1K,Corel-5K,Corel-10K,paris,script/}
 # -> le code est dans script/, les bases sont dans le dossier PARENT.
-DATA_DIR = BASE.parent
+DATA_DIR = Path(os.environ.get("CBIR_DATA_DIR", BASE.parent))   # variable d'environnement facultative
 WORK = BASE / "workdir"
 MANIFESTS = WORK / "manifests"
 FEATURES = WORK / "features"

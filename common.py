@@ -64,7 +64,7 @@ def scan_dataset(key: str, preset: str = "full", cap: int = None) -> pd.DataFram
 
 
 def load_manifest(key: str) -> pd.DataFrame:
-    return pd.read_csv(C.MANIFESTS / f"{key}.csv")
+    return pd.read_csv(C.MANIFESTS / f"{key}.csv", dtype={"class_name": str})   # classes numériques (Corel-5K/10K) = texte
 
 
 def class_names(df: pd.DataFrame) -> list:

@@ -13,8 +13,16 @@ import markdown
 import config as C
 from common import load_manifest, class_names
 
+def _exiger(*noms):
+    manq = [n for n in noms if not (C.RESULTS / n).exists()]
+    if manq:
+        raise SystemExit("\n❌ Fichier(s) manquant(s) dans results\\ : " + ", ".join(manq) +
+                         "\n   -> lancer d'abord, dans l'ordre :  python etape1_preparation.py  |  python etape2_extraction.py  |  python etape4_evaluation.py\n")
+
+
+_exiger("metrics_global.csv", "metrics_par_classe.csv", "pr_curves.json", "etape1_stats.json")
 G = pd.read_csv(C.RESULTS / "metrics_global.csv")
-PC = pd.read_csv(C.RESULTS / "metrics_par_classe.csv")
+PC = pd.read_csv(C.RESULTS / "metrics_par_classe.csv", dtype={"classe": str})
 PR = json.loads((C.RESULTS / "pr_curves.json").read_text(encoding="utf-8"))
 ST = json.loads((C.RESULTS / "etape1_stats.json").read_text(encoding="utf-8"))
 DSS = list(G.dataset.unique())

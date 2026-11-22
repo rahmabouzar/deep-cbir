@@ -1,0 +1,24 @@
+# Environnement Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Données, caches et sorties générées (volumineux, reproductibles)
+workdir/
+results/
+data/
+*.zip
+*.tgz
+*.tar.gz
+*.npy
+*.npz
+
+# Poids pré-entraînés téléchargés par torchvision
+*.pth
+
+# Divers
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

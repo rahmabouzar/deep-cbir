@@ -17,7 +17,7 @@ st.set_page_config(page_title="CBIR – Réseaux profonds", page_icon="🔎", la
 @st.cache_data
 def lire_csv(name):
     p = C.RESULTS / name
-    return pd.read_csv(p) if p.exists() else None
+    return pd.read_csv(p, dtype={"classe": str}) if p.exists() else None
 
 
 @st.cache_data
@@ -46,9 +46,14 @@ G, PC, PR, ST = lire_csv("metrics_global.csv"), lire_csv("metrics_par_classe.csv
 
 st.sidebar.title("🔎 CBIR – IRDM")
 st.sidebar.caption("Master 2 SID · USTO-MB")
-page = st.sidebar.radio("Navigation", ["🏠 Accueil", "🔎 Recherche d'images", "📊 Résultats globaux",
+page = st.sidebar.radio("Navigation", ["🏠 Accueil", "🎲 Expérience aléatoire", "🔎 Recherche d'images", "📊 Résultats globaux",
                                        "📈 Courbes Précision-Rappel", "🧩 Comparaison par classe",
                                        "🔀 Matrices de confusion", "⚖️ Comparaisons croisées", "📄 Rapport"])
+if page.startswith("🎲"):                      # page autonome : extrait elle-même les descripteurs de l'échantillon
+    from page_experience import afficher
+    afficher()
+    st.stop()
+
 pairs = available_pairs()
 if not pairs:
     st.warning("Aucune caractéristique extraite. Lancer les étapes 1 à 4 (voir README).")
