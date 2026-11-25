@@ -30,7 +30,7 @@ class ImgDataset(Dataset):
         try:
             return self.tf(load_rgb(self.paths[i])), i
         except Exception as e:                       # image corrompue -> vecteur nul
-            print(f"\n⚠ image illisible {self.paths[i]} : {e}")
+            print(f"\n[!] image illisible {self.paths[i]} : {e}")
             return torch.zeros(3, C.IMG_SIZE, C.IMG_SIZE), i
 
 
@@ -76,7 +76,7 @@ def extract_dataset(ds, models, batch, workers, device, force, t_end):
                     for m in missing[s]:
                         np.savez(sf(m, s), F=np.concatenate(buf.pop((s, m))), t=tm.pop((s, m)))
                     if t_end and time.time() > t_end and end < len(idx):
-                        print("\n⏸ limite de temps atteinte : progression sauvegardée. "
+                        print("\n[PAUSE] limite de temps atteinte : progression sauvegardée. "
                               "Relancer la MÊME commande pour continuer."); return False
     for m in todo:                                                    # assemblage final
         parts = [np.load(sf(m, s)) for s in range(ns)]
@@ -87,7 +87,7 @@ def extract_dataset(ds, models, batch, workers, device, force, t_end):
         meta = dict(dataset=ds, model=m, n_images=int(n), dim=int(F.shape[1]), params_millions=round(n_par, 2),
                     device=device, temps_inference_s=round(t, 2), ms_par_image=round(1000 * t / n, 3), manifest_md5=h)
         meta_path(ds, m).write_text(json.dumps(meta, indent=2), encoding="utf-8")
-        print(f"  ✔ {m}: {F.shape}  ({meta['ms_par_image']} ms/image)")
+        print(f"  [OK] {m}: {F.shape}  ({meta['ms_par_image']} ms/image)")
     shutil.rmtree(sdir, ignore_errors=True)
     return True
 
@@ -108,7 +108,7 @@ def main():
     for ds in a.datasets:
         if not extract_dataset(ds, a.models, a.batch, a.workers, device, a.force, t_end):
             return
-    print("\n✔ Étape 2 terminée ->", C.FEATURES)
+    print("\n[OK] Étape 2 terminée ->", C.FEATURES)
 
 
 if __name__ == "__main__":

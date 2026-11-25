@@ -67,7 +67,7 @@ def main():
         res = search(a.dataset, a.model, a.query_idx, metric, a.k)
         print(f"\n-- {metric} : {int(res.pertinent.sum())}/{a.k} pertinentes")
         print(res[["path", "class_name", "distance", "pertinent"]].to_string(index=False))
-    print("\n✔ figure :", figure_recherche(a.dataset, a.model, a.query_idx, a.k))
+    print("\n[OK] figure :", figure_recherche(a.dataset, a.model, a.query_idx, a.k))
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ Définitions (par classe c, sur les requêtes de la classe c) :
   P@10 moyen = moyenne des P@10 ; mAP moyen = moyenne des AP ; mAP max = meilleure AP obtenue par une requête de la classe.
 
 Usage en ligne de commande :  python experience.py --dataset corel1k [--seed 7] [--models vgg16 resnet50 squeezenet1_1 resnet18]
-Usage web                  :  streamlit run app.py   -> page « 🎲 Expérience aléatoire »
+Usage web                  :  streamlit run app.py   -> page « Expérience sur échantillon »
 """
 import argparse, hashlib, time
 from pathlib import Path
@@ -216,7 +216,7 @@ def main():
                         progress=lambda f, msg: print(f"  [{int(100 * f):3d} %] {msg}"))
     pd.set_option("display.width", 250, "display.max_columns", 30)
     print(tab.round(3).to_string())
-    print("✔ enregistré :", sauver(tab, a.dataset, a.seed))
+    print("[OK] enregistré :", sauver(tab, a.dataset, a.seed))
 
 
 if __name__ == "__main__":

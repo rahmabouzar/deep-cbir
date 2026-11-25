@@ -77,7 +77,7 @@ def main():
         df[["format", "mode", "width", "height", "size_kb", "ok"]] = pd.DataFrame(info, index=df.index)
         bad = int((~df.ok).sum())
         if bad:
-            print(f"  ⚠ {bad} image(s) illisible(s) ignorée(s)")
+            print(f"  [!] {bad} image(s) illisible(s) ignorée(s)")
         df = df[df.ok].drop(columns="ok").reset_index(drop=True)
         # ré-indexation des labels après suppression éventuelle
         names = sorted(df.class_name.unique(), key=lambda s: (len(s), s) if s.isdigit() else (0, s))
@@ -105,7 +105,7 @@ def main():
     old = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
     old.update(stats)
     path.write_text(json.dumps(old, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"\n✔ Étape 1 terminée -> {C.MANIFESTS}")
+    print(f"\n[OK] Étape 1 terminée -> {C.MANIFESTS}")
 
 
 if __name__ == "__main__":

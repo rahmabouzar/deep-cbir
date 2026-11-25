@@ -77,7 +77,7 @@ def main():
         df = load_manifest(ds); names = class_names(df); y = df.label.values
         F = load_features(ds, model); meta = load_meta(ds, model)
         if len(F) != len(df):
-            print(f"⚠ {ds}/{model} : {len(F)} vecteurs ≠ {len(df)} images du manifeste -> relancer l'étape 2"); continue
+            print(f"[!] {ds}/{model} : {len(F)} vecteurs ≠ {len(df)} images du manifeste -> relancer l'étape 2"); continue
         h = meta.get("manifest_md5", "")
         if (not a.force and len(G) and ((G.dataset == ds) & (G.model == model) & (G.get("manifest_md5") == h)).any()):
             print(f"= {ds:9s} {model:19s} déjà évalué"); continue
@@ -111,7 +111,7 @@ def main():
         jp.write_text(json.dumps(dict(niveaux_rappel=C.RECALL_LEVELS, courbes=prc)), encoding="utf-8")
     if G.empty:
         raise SystemExit("Aucune caractéristique trouvée : lancer l'étape 2 d'abord.")
-    print(f"\n✔ Étape 4 terminée ({n_new} couple(s) évalué(s)) ->", C.RESULTS)
+    print(f"\n[OK] Étape 4 terminée ({n_new} couple(s) évalué(s)) ->", C.RESULTS)
 
 
 if __name__ == "__main__":

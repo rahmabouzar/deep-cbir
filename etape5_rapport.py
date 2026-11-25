@@ -16,7 +16,7 @@ from common import load_manifest, class_names
 def _exiger(*noms):
     manq = [n for n in noms if not (C.RESULTS / n).exists()]
     if manq:
-        raise SystemExit("\n❌ Fichier(s) manquant(s) dans results\\ : " + ", ".join(manq) +
+        raise SystemExit("\n[ERREUR] Fichier(s) manquant(s) dans results\\ : " + ", ".join(manq) +
                          "\n   -> lancer d'abord, dans l'ordre :  python etape1_preparation.py  |  python etape2_extraction.py  |  python etape4_evaluation.py\n")
 
 
@@ -126,7 +126,7 @@ def build():
     A("# Rapport – CBIR par réseaux profonds pré-entraînés\n")
     A("**Module IRDM – Master 2 SID – USTO-MB** · *Rapport généré automatiquement à partir des résultats mesurés.*\n")
     if PARTIELS:
-        A("> ⚠ Modèle(s) évalué(s) sur une partie seulement des bases, donc exclus des comparaisons : "
+        A("> [!] Modèle(s) évalué(s) sur une partie seulement des bases, donc exclus des comparaisons : "
           + ", ".join(C.MODELS[m][0] for m in PARTIELS) + ".\n")
     A("## 1. Protocole\n")
     A("- **Prétraitement** : redimensionnement 224×224 et normalisation ImageNet (moyenne/écart-type).")
@@ -234,7 +234,7 @@ def main():
     (C.RESULTS / "rapport.html").write_text(
         f"<html><head><meta charset='utf-8'><title>Rapport CBIR</title><style>{css}</style></head><body>{html}</body></html>",
         encoding="utf-8")
-    print("✔ Rapport :", C.RESULTS / "rapport.html")
+    print("[OK] Rapport :", C.RESULTS / "rapport.html")
 
 
 if __name__ == "__main__":

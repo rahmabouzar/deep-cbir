@@ -16,7 +16,7 @@ def load_results():
     need = ["metrics_global.csv", "metrics_par_classe.csv", "pr_curves.json", "etape1_stats.json"]
     manq = [n for n in need if not (C.RESULTS / n).exists()]
     if manq:
-        raise SystemExit("\n❌ Fichier(s) manquant(s) dans results\\ : " + ", ".join(manq) +
+        raise SystemExit("\n[ERREUR] Fichier(s) manquant(s) dans results\\ : " + ", ".join(manq) +
                          "\n   -> lancer d'abord : etape1_preparation.py | etape2_extraction.py | etape4_evaluation.py\n")
     r = types.SimpleNamespace()
     r.G = pd.read_csv(C.RESULTS / "metrics_global.csv"); r.PC = pd.read_csv(C.RESULTS / "metrics_par_classe.csv", dtype={"classe": str})

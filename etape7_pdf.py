@@ -387,4 +387,4 @@ def build_all(force=True):
 
 if __name__ == "__main__":
     r = build_all()
-    for k, v in r["pdf"].items(): print("✔", v, f"({os.path.getsize(v) / 1e6:.1f} Mo)")
+    for k, v in r["pdf"].items(): print("[OK]", v, f"({os.path.getsize(v) / 1e6:.1f} Mo)")

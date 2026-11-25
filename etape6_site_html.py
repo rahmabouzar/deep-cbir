@@ -25,7 +25,7 @@ for d in ("assets", "thumbs", "img"):
 def _exiger(*noms):
     manq = [n for n in noms if not (C.RESULTS / n).exists()]
     if manq:
-        raise SystemExit("\n❌ Fichier(s) manquant(s) dans results\\ : " + ", ".join(manq) +
+        raise SystemExit("\n[ERREUR] Fichier(s) manquant(s) dans results\\ : " + ", ".join(manq) +
                          "\n   -> lancer d'abord, dans l'ordre :  python etape1_preparation.py  |  python etape2_extraction.py  |  python etape4_evaluation.py\n")
 
 
@@ -142,8 +142,8 @@ def pdf_links():
 def dl_bar(name):
     pl = pdf_links(); st = STAGE_OF.get(name); b = ""
     if "rapport_complet" in pl:
-        if st and f"etape{st}" in pl: b += f'<a class="btn pri" href="{pl[f"etape{st}"]}" download>⬇ PDF de l\'étape {st}</a>'
-        b += f'<a class="btn{"" if b else " pri"}" href="{pl["rapport_complet"]}" download>⬇ Rapport PDF complet</a>'
+        if st and f"etape{st}" in pl: b += f'<a class="btn pri" href="{pl[f"etape{st}"]}" download>PDF de l\'étape {st}</a>'
+        b += f'<a class="btn{"" if b else " pri"}" href="{pl["rapport_complet"]}" download>Rapport PDF complet</a>'
     return f'<div class="dlbar">{b}</div>' if b else ""
 
 
@@ -156,8 +156,8 @@ def gallery(name):
         for _, f, _ in items:
             if (C.FIGS / f).exists(): z.write(C.FIGS / f, f)
     cards = "".join(f'<div class="gcard"><a class="im" href="{_copy_img(f)}" target="_blank"><img loading="lazy" src="{_copy_img(f)}" alt="{esc(t)}"></a>'
-                    f'<div class="cap"><b>{esc(t)}</b><span>{esc(c)}</span><a class="btn sm" href="img/{f}" download>⬇ PNG</a></div></div>' for t, f, c in items)
-    return (f'<h2>Images des résultats</h2><div class="dlbar"><a class="btn" href="img/images_{name}.zip" download>⬇ Toutes les images de cette page (ZIP)</a></div>'
+                    f'<div class="cap"><b>{esc(t)}</b><span>{esc(c)}</span><a class="btn sm" href="img/{f}" download>PNG</a></div></div>' for t, f, c in items)
+    return (f'<h2>Images des résultats</h2><div class="dlbar"><a class="btn" href="img/images_{name}.zip" download>Toutes les images de cette page (ZIP)</a></div>'
             f'<div class="gal">{cards}</div>')
 
 
@@ -167,8 +167,8 @@ def page(name, title, body):
         side += f"<h4>{grp}</h4>" + "".join(f'<a class="nv{" sub" if lv else ""}{" on" if n == name else ""}" href="{n}.html">{t}</a>' for n, t, lv in items)
     pl = pdf_links()
     if pl:
-        side += "<h4>Téléchargements</h4>" + (f'<a class="dl" href="{pl["rapport_complet"]}" download>⬇ Rapport PDF complet</a>' if "rapport_complet" in pl else "")
-        side += "".join(f'<a class="dl" href="{pl[f"etape{i}"]}" download>⬇ PDF étape {i}</a>' for i in range(1, 5) if f"etape{i}" in pl)
+        side += "<h4>Téléchargements</h4>" + (f'<a class="dl" href="{pl["rapport_complet"]}" download>Rapport PDF complet</a>' if "rapport_complet" in pl else "")
+        side += "".join(f'<a class="dl" href="{pl[f"etape{i}"]}" download>PDF étape {i}</a>' for i in range(1, 5) if f"etape{i}" in pl)
     side += '<h4>Sur cette page</h4><div id="toc"></div>'
     i = ORDER.index(name) if name in ORDER else -1
     pn = ""
@@ -177,12 +177,12 @@ def page(name, title, body):
         nx = f'<a class="card n" href="{ORDER[i + 1]}.html"><small>Suivant →</small><b>{LABEL[ORDER[i + 1]]}</b></a>' if i < len(ORDER) - 1 else ""
         pn = f'<div class="pn">{pv}{nx}</div>'
     top = dl_bar(name) if name in STAGE_OF else ""
-    if name == "index" and pl: top = f'<div class="dlbar"><a class="btn pri" href="{pl["rapport_complet"]}" download>⬇ Rapport PDF complet</a></div>'
+    if name == "index" and pl: top = f'<div class="dlbar"><a class="btn pri" href="{pl["rapport_complet"]}" download>Rapport PDF complet</a></div>'
     (SITE / f"{name}.html").write_text(
         f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
         f'<title>{esc(title)} – DeepCBIR</title><script>try{{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}}catch(e){{}}</script>'
         f'<style>{CSS}</style><script src="assets/plotly.min.js"></script></head><body>'
-        f'<header class="top"><button class="btn" id="burger">☰</button><a class="brand" href="index.html">🔎 DeepCBIR<small>CBIR par réseaux profonds</small></a><span class="sp"></span>'
+        f'<header class="top"><button class="btn" id="burger"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="vertical-align:-3px;margin:0"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><a class="brand" href="index.html"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="vertical-align:-3px;margin-right:6px"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>DeepCBIR<small>CBIR par réseaux profonds</small></a><span class="sp"></span>'
         f'<button class="btn" id="theme" title="Mode clair / sombre">◐ Thème</button></header>'
         f'<div class="shell"><aside id="side">{side}</aside><main><h1>{esc(title)}</h1>{top}{body}{gallery(name)}{pn}</main></div>'
         f'<button class="btn pri" id="totop">↑ Haut</button><script>{JS}</script></body></html>', encoding="utf-8")
@@ -370,7 +370,7 @@ def worked_example():
     order = np.argsort(d)[:-1]; rel = (y[order] == y[qi]); nrel = int(rel.sum()); cs = np.cumsum(rel)
     prec = cs / np.arange(1, len(rel) + 1); ap = (prec * rel).sum() / nrel
     rows = [{"Rang": i + 1, "Image": f'<img src="{thumb(df.path[order[i]])}" height="42">', "Classe": df.class_name[order[i]],
-             "Pertinente": "✔" if rel[i] else "✘", "Précision@rang": round(float(prec[i]), 3), "Rappel@rang": round(float(cs[i] / nrel), 3)} for i in range(10)]
+             "Pertinente": "oui" if rel[i] else "non", "Précision@rang": round(float(prec[i]), 3), "Rappel@rang": round(float(cs[i] / nrel), 3)} for i in range(10)]
     t = pd.DataFrame(rows)
     th = "".join(f"<th>{c}</th>" for c in t.columns)
     body = "".join("<tr>" + "".join(f"<td>{v}</td>" for v in r_.values()) + "</tr>" for r_ in rows)
@@ -723,12 +723,12 @@ def p_etape5():
                "<code>results/metrics_*.csv</code>, <code>pr_curves.json</code>, figures", "<code>results/pdf/rapport_complet.pdf</code> et <code>results/rapport.html</code>")
     items = []
     if "rapport_complet" in pl:
-        bar = '<div class="dlbar"><a class="btn pri" href="%s" download>⬇ Rapport PDF complet</a>' % pl["rapport_complet"]
-        bar += "".join(f'<a class="btn" href="{pl[f"etape{i}"]}" download>⬇ PDF étape {i}</a>' for i in range(1, 5) if f"etape{i}" in pl) + "</div>"
+        bar = '<div class="dlbar"><a class="btn pri" href="%s" download>Rapport PDF complet</a>' % pl["rapport_complet"]
+        bar += "".join(f'<a class="btn" href="{pl[f"etape{i}"]}" download>PDF étape {i}</a>' for i in range(1, 5) if f"etape{i}" in pl) + "</div>"
         items.append(("Rapport PDF", bar + f'<iframe src="{pl["rapport_complet"]}" style="width:100%;height:900px;border:1px solid var(--bd);border-radius:12px;background:#fff"></iframe>'))
     if src.exists():
         shutil.copy(src, SITE / "rapport.html")
-        items.append(("Rapport HTML", '<div class="dlbar"><a class="btn" href="rapport.html" target="_blank">Ouvrir dans un nouvel onglet</a><a class="btn" href="rapport.html" download>⬇ Télécharger</a></div>'
+        items.append(("Rapport HTML", '<div class="dlbar"><a class="btn" href="rapport.html" target="_blank">Ouvrir dans un nouvel onglet</a><a class="btn" href="rapport.html" download>Télécharger</a></div>'
                       '<iframe src="rapport.html" style="width:100%;height:900px;border:1px solid var(--bd);border-radius:12px;background:#fff"></iframe>'))
     b += tabs(items) if items else box("Aucun rapport généré : lancez <code>python etape6_site_html.py</code> (PDF) et <code>python etape5_rapport.py</code> (HTML).", "note")
     b += box("Le PDF contient : couverture, sommaire cliquable, puis pour chaque étape son rôle, ses résultats chiffrés, ses figures et ses explications ; "
@@ -746,7 +746,7 @@ def main():
         ART = P7.build_all()
     for f in (p_index, p_donnees, p_etape2, p_etape3, p_resultats, p_courbes, p_classes, p_confusion, p_etape5, p_comparaisons, p_modeles, p_methode, p_conclusion):
         print("  ·", f.__name__); f()
-    print("\n✔ Site généré :", SITE / "index.html")
+    print("\n[OK] Site généré :", SITE / "index.html")
 
 
 if __name__ == "__main__":

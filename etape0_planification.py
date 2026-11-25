@@ -110,7 +110,7 @@ def main():
         if name.startswith("COMPLET") and (best is None or (cov, len(models)) > (best[0], best[1])):
             best = (cov, len(models), name)
     if best:
-        print(f"\n★ Recommandé pour votre budget : « {best[2]} » ({best[0]:.0f} % des images).")
+        print(f"\n* Recommandé pour votre budget : « {best[2]} » ({best[0]:.0f} % des images).")
     if "vgg16" in a.models:
         print(f"  VGG-16 seul sur toutes les images : ≈ {fmt(sum(n_imgs(k, None) * ms['vgg16'] / 1000 for k in counts))} "
               "(à lancer une nuit : python etape2_extraction.py --models vgg16).")

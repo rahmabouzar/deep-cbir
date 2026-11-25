@@ -76,3 +76,14 @@ columns = the drawn classes (+ « Toutes classes »). Corel-1K: its 10 classes; 
 Command line: `python experience.py --dataset corel10k --classes 20 --seed 7` (CSV saved in `results/experiences/`).
 
 Manual mode: in the same page choose « ✋ Manuel », pick the classes, tick the images you want (thumbnails, paging, "all / none / n random" buttons per class), click « Valider ma sélection », then « Lancer l'évaluation ».
+
+## Web interface (updated)
+`python -m streamlit run app.py` — grouped sidebar navigation with Material icons (no emojis): Accueil · Expérience sur échantillon · Recherche d'images ·
+Résultats globaux · Courbes Précision-Rappel · Comparaison par classe · Matrices de confusion · Comparaisons croisées.
+The in-app « Rapport » page was removed (`etape5_rapport.py` still generates `results/rapport.html` from the command line).
+Theme: `.streamlit/config.toml` (colors, hidden Deploy toolbar) + `ui.py` (CSS and Plotly style shared by all pages).
+Corel-5K/10K classes are named « 0 », « 1 », … : heatmaps now use categorical axes so class order and labels display correctly.
+
+## Design (Notion-style) and icons
+Colors, radii and typography follow `DESIGN-notion.md` (warm paper background, white cards with hairlines, one blue for actions, sticker colors for icons/charts) — see `ui.py` and `.streamlit/config.toml`.
+Drop Streamline *Flex Pop* SVG files into `assets/icons/` (names in `assets/icons/README.md`); missing files fall back to simple built-in icons.
