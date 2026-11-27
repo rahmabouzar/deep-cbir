@@ -1,0 +1,267 @@
+ python etape1_preparation.py
+>> python etape2_extraction.py
+>> python etape3_recherche.py
+>> python etape4_evaluation.py
+
+=== Corel-1K ===
+lecture des en-têtes: 100%|███████████████████████████████████████| 1000/1000 [00:01<00:00, 637.70it/s]
+{
+  "nom": "Corel-1K",
+  "n_images": 1000,
+  "n_classes": 10,
+  "extensions": {
+    "jpg": 1000
+  },
+  "formats": {
+    "JPEG": 1000
+  },
+  "largeur_moy": 358.4,
+  "hauteur_moy": 281.6,
+  "largeur_min": 256,
+  "largeur_max": 384,
+  "taille_moy_ko": 29.15,
+  "taille_totale_mo": 28.5,
+  "images_par_classe_min": 100,
+  "images_par_classe_max": 100,
+  "preset": "full",
+  "illisibles": 0,
+  "n_disponibles": 1000,
+  "couverture_pct": 100.0
+}
+
+=== Corel-5K ===
+lecture des en-têtes: 100%|███████████████████████████████████████| 5000/5000 [00:06<00:00, 722.36it/s]
+{
+  "nom": "Corel-5K",
+  "n_images": 5000,
+  "n_classes": 50,
+  "extensions": {
+    "jpeg": 5000
+  },
+  "formats": {
+    "JPEG": 5000
+  },
+  "largeur_moy": 175.9,
+  "hauteur_moy": 144.1,
+  "largeur_min": 128,
+  "largeur_max": 192,
+  "taille_moy_ko": 13.23,
+  "taille_totale_mo": 64.6,
+  "images_par_classe_min": 100,
+  "images_par_classe_max": 100,
+  "preset": "full",
+  "illisibles": 0,
+  "n_disponibles": 5000,
+  "couverture_pct": 100.0
+}
+
+=== Corel-10K ===
+lecture des en-têtes: 100%|█████████████████████████████████████| 10000/10000 [00:12<00:00, 825.68it/s]
+{
+  "nom": "Corel-10K",
+  "n_images": 10000,
+  "n_classes": 100,
+  "extensions": {
+    "jpeg": 10000
+  },
+  "formats": {
+    "JPEG": 10000
+  },
+  "largeur_moy": 123.8,
+  "hauteur_moy": 102.2,
+  "largeur_min": 80,
+  "largeur_max": 384,
+  "taille_moy_ko": 4.09,
+  "taille_totale_mo": 40.0,
+  "images_par_classe_min": 100,
+  "images_par_classe_max": 100,
+  "preset": "full",
+  "illisibles": 0,
+  "n_disponibles": 10000,
+  "couverture_pct": 100.0
+}
+
+=== CIFAR-100 (test) ===
+lecture des en-têtes: 100%|█████████████████████████████████████| 10000/10000 [00:12<00:00, 791.37it/s]
+{
+  "nom": "CIFAR-100 (test)",
+  "n_images": 10000,
+  "n_classes": 100,
+  "extensions": {
+    "png": 10000
+  },
+  "formats": {
+    "PNG": 10000
+  },
+  "largeur_moy": 32.0,
+  "hauteur_moy": 32.0,
+  "largeur_min": 32,
+  "largeur_max": 32,
+  "taille_moy_ko": 2.19,
+  "taille_totale_mo": 21.4,
+  "images_par_classe_min": 100,
+  "images_par_classe_max": 100,
+  "preset": "full",
+  "illisibles": 0,
+  "n_disponibles": 10000,
+  "couverture_pct": 100.0
+}
+
+=== Paris6k ===
+lecture des en-têtes: 100%|███████████████████████████████████████| 6412/6412 [00:11<00:00, 574.56it/s]
+  [!] 20 image(s) illisible(s) ignorée(s)
+{
+  "nom": "Paris6k",
+  "n_images": 6392,
+  "n_classes": 12,
+  "extensions": {
+    "jpg": 6392
+  },
+  "formats": {
+    "JPEG": 6392
+  },
+  "largeur_moy": 914.8,
+  "hauteur_moy": 842.2,
+  "largeur_min": 217,
+  "largeur_max": 1024,
+  "taille_moy_ko": 399.61,
+  "taille_totale_mo": 2494.4,
+  "images_par_classe_min": 147,
+  "images_par_classe_max": 1497,
+  "preset": "full",
+  "illisibles": 20,
+  "n_disponibles": 6412,
+  "couverture_pct": 99.7
+}
+
+=== COUVERTURE : images utilisées / images trouvées sur le disque ===
+  Corel-1K               1000 / 1000   = 100.0 %
+  Corel-5K               5000 / 5000   = 100.0 %
+  Corel-10K             10000 / 10000  = 100.0 %
+  CIFAR-100 (test)      10000 / 10000  = 100.0 %
+  Paris6k                6392 / 6412   =  99.7 %
+  -> couverture < 100 % : relancer avec --preset full pour tout utiliser.
+
+[OK] Étape 1 terminée -> C:\rahma\IRDM\MiniProject\script\workdir\manifests
+
+=== corel1k : 1000 images | modèles : squeezenet1_1, mobilenet_v3_small, resnet18, resnet50, vgg16 | cpu | 0/1 blocs déjà faits ===
+corel1k: 100%|████████████████████████████████████████████████████| 1000/1000 [09:34<00:00,  1.74img/s]
+  [OK] squeezenet1_1: (1000, 512)  (13.519 ms/image)
+  [OK] mobilenet_v3_small: (1000, 576)  (6.13 ms/image)
+  [OK] resnet18: (1000, 512)  (48.913 ms/image)
+  [OK] resnet50: (1000, 2048)  (132.128 ms/image)
+  [OK] vgg16: (1000, 4096)  (352.435 ms/image)
+
+=== corel5k : 5000 images | modèles : squeezenet1_1, mobilenet_v3_small, resnet18, resnet50, vgg16 | cpu | 0/5 blocs déjà faits ===
+corel5k: 100%|████████████████████████████████████████████████████| 5000/5000 [35:19<00:00,  2.36img/s]
+  [OK] squeezenet1_1: (5000, 512)  (11.278 ms/image)
+  [OK] mobilenet_v3_small: (5000, 576)  (4.833 ms/image)
+  [OK] resnet18: (5000, 512)  (38.045 ms/image)
+  [OK] resnet50: (5000, 2048)  (101.585 ms/image)
+  [OK] vgg16: (5000, 4096)  (262.58 ms/image)
+
+=== corel10k : 10000 images | modèles : squeezenet1_1, mobilenet_v3_small, resnet18, resnet50, vgg16 | cpu | 0/10 blocs déjà faits ===
+corel10k: 100%|█████████████████████████████████████████████████| 10000/10000 [49:00<00:00,  3.40img/s]
+  [OK] squeezenet1_1: (10000, 512)  (8.319 ms/image)
+  [OK] mobilenet_v3_small: (10000, 576)  (3.648 ms/image)
+  [OK] resnet18: (10000, 512)  (26.442 ms/image)
+  [OK] resnet50: (10000, 2048)  (71.003 ms/image)
+  [OK] vgg16: (10000, 4096)  (181.779 ms/image)
+
+=== cifar100 : 10000 images | modèles : squeezenet1_1, mobilenet_v3_small, resnet18, resnet50, vgg16 | cpu | 0/10 blocs déjà faits ===
+cifar100: 100%|█████████████████████████████████████████████████| 10000/10000 [45:34<00:00,  3.66img/s]
+  [OK] squeezenet1_1: (10000, 512)  (7.659 ms/image)
+  [OK] mobilenet_v3_small: (10000, 576)  (3.279 ms/image)
+  [OK] resnet18: (10000, 512)  (24.21 ms/image)
+  [OK] resnet50: (10000, 2048)  (65.54 ms/image)
+  [OK] vgg16: (10000, 4096)  (170.818 ms/image)
+
+=== paris6k : 6392 images | modèles : squeezenet1_1, mobilenet_v3_small, resnet18, resnet50, vgg16 | cpu | 0/7 blocs déjà faits ===
+paris6k: 100%|████████████████████████████████████████████████████| 6392/6392 [29:32<00:00,  3.61img/s]
+  [OK] squeezenet1_1: (6392, 512)  (8.514 ms/image)
+  [OK] mobilenet_v3_small: (6392, 576)  (3.864 ms/image)
+  [OK] resnet18: (6392, 512)  (24.828 ms/image)
+  [OK] resnet50: (6392, 2048)  (65.896 ms/image)
+  [OK] vgg16: (6392, 4096)  (171.439 ms/image)
+
+[OK] Étape 2 terminée -> C:\rahma\IRDM\MiniProject\script\workdir\features
+Requête #89 : C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\9.jpg (classe africans)
+
+-- cosinus : 10/10 pertinentes
+                                                       path class_name  distance  pertinent
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\38.jpg   africans  0.237688       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\42.jpg   africans  0.260618       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\36.jpg   africans  0.297520       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\10.jpg   africans  0.299184       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\66.jpg   africans  0.326865       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\26.jpg   africans  0.340822       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\62.jpg   africans  0.344157       True
+ C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\1.jpg   africans  0.347345       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\59.jpg   africans  0.355403       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\92.jpg   africans  0.358641       True
+
+-- euclidienne : 10/10 pertinentes
+                                                       path class_name  distance  pertinent
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\38.jpg   africans 10.085859       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\66.jpg   africans 11.407542       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\62.jpg   africans 11.791933       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\41.jpg   africans 11.826797       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\36.jpg   africans 12.129594       True
+ C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\7.jpg   africans 12.167693       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\27.jpg   africans 12.297469       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\39.jpg   africans 12.428126       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\76.jpg   africans 12.450866       True
+C:\rahma\IRDM\MiniProject\Corel-1K\Corel-1K\africans\92.jpg   africans 12.547570       True
+
+[OK] figure : C:\rahma\IRDM\MiniProject\script\results\figures\recherche_corel1k_resnet50_q89.png
+cifar100  mobilenet_v3_small  cosinus     mAP=0.1683  P@10=0.3813  (0.49 ms/requête)
+cifar100  mobilenet_v3_small  euclidienne mAP=0.1421  P@10=0.3478  (0.62 ms/requête)
+cifar100  resnet18            cosinus     mAP=0.1672  P@10=0.3744  (0.46 ms/requête)
+cifar100  resnet18            euclidienne mAP=0.1413  P@10=0.3422  (0.62 ms/requête)
+cifar100  resnet50            cosinus     mAP=0.2084  P@10=0.4249  (0.64 ms/requête)
+cifar100  resnet50            euclidienne mAP=0.1931  P@10=0.4299  (0.76 ms/requête)
+cifar100  squeezenet1_1       cosinus     mAP=0.1012  P@10=0.2710  (0.50 ms/requête)
+cifar100  squeezenet1_1       euclidienne mAP=0.0920  P@10=0.2518  (0.51 ms/requête)
+cifar100  vgg16               cosinus     mAP=0.1421  P@10=0.3243  (1.02 ms/requête)
+cifar100  vgg16               euclidienne mAP=0.1097  P@10=0.2861  (1.22 ms/requête)
+corel10k  mobilenet_v3_small  cosinus     mAP=0.3898  P@10=0.7009  (0.54 ms/requête)
+corel10k  mobilenet_v3_small  euclidienne mAP=0.3612  P@10=0.6804  (0.48 ms/requête)
+corel10k  resnet18            cosinus     mAP=0.4539  P@10=0.7418  (0.58 ms/requête)
+corel10k  resnet18            euclidienne mAP=0.3912  P@10=0.7035  (0.49 ms/requête)
+corel10k  resnet50            cosinus     mAP=0.5854  P@10=0.8192  (0.82 ms/requête)
+corel10k  resnet50            euclidienne mAP=0.5005  P@10=0.7957  (0.88 ms/requête)
+corel10k  squeezenet1_1       cosinus     mAP=0.3600  P@10=0.6668  (0.45 ms/requête)
+corel10k  squeezenet1_1       euclidienne mAP=0.3156  P@10=0.6319  (0.54 ms/requête)
+corel10k  vgg16               cosinus     mAP=0.4351  P@10=0.7161  (1.14 ms/requête)
+corel10k  vgg16               euclidienne mAP=0.3418  P@10=0.6604  (0.89 ms/requête)
+corel1k   mobilenet_v3_small  cosinus     mAP=0.8120  P@10=0.9436  (0.14 ms/requête)
+corel1k   mobilenet_v3_small  euclidienne mAP=0.8023  P@10=0.9434  (0.12 ms/requête)
+corel1k   resnet18            cosinus     mAP=0.8843  P@10=0.9608  (0.07 ms/requête)
+corel1k   resnet18            euclidienne mAP=0.8381  P@10=0.9532  (0.14 ms/requête)
+corel1k   resnet50            cosinus     mAP=0.9334  P@10=0.9762  (0.13 ms/requête)
+corel1k   resnet50            euclidienne mAP=0.8028  P@10=0.9608  (0.13 ms/requête)
+corel1k   squeezenet1_1       cosinus     mAP=0.8000  P@10=0.9271  (0.11 ms/requête)
+corel1k   squeezenet1_1       euclidienne mAP=0.7570  P@10=0.9155  (0.11 ms/requête)
+corel1k   vgg16               cosinus     mAP=0.8933  P@10=0.9641  (0.17 ms/requête)
+corel1k   vgg16               euclidienne mAP=0.7854  P@10=0.9465  (0.15 ms/requête)
+corel5k   mobilenet_v3_small  cosinus     mAP=0.2078  P@10=0.4195  (0.27 ms/requête)
+corel5k   mobilenet_v3_small  euclidienne mAP=0.1862  P@10=0.4020  (0.44 ms/requête)
+corel5k   resnet18            cosinus     mAP=0.2522  P@10=0.4494  (0.34 ms/requête)
+corel5k   resnet18            euclidienne mAP=0.2152  P@10=0.4255  (0.35 ms/requête)
+corel5k   resnet50            cosinus     mAP=0.3209  P@10=0.5190  (0.29 ms/requête)
+corel5k   resnet50            euclidienne mAP=0.2724  P@10=0.4977  (0.32 ms/requête)
+corel5k   squeezenet1_1       cosinus     mAP=0.2033  P@10=0.4122  (0.23 ms/requête)
+corel5k   squeezenet1_1       euclidienne mAP=0.1682  P@10=0.3823  (0.39 ms/requête)
+corel5k   vgg16               euclidienne mAP=0.1889  P@10=0.4015  (0.43 ms/requête)
+paris6k   mobilenet_v3_small  cosinus     mAP=0.2515  P@10=0.6674  (0.29 ms/requête)
+paris6k   mobilenet_v3_small  euclidienne mAP=0.2362  P@10=0.6534  (0.41 ms/requête)
+paris6k   resnet18            cosinus     mAP=0.2643  P@10=0.6727  (0.41 ms/requête)
+paris6k   resnet18            euclidienne mAP=0.2376  P@10=0.6562  (0.43 ms/requête)
+paris6k   resnet50            cosinus     mAP=0.3113  P@10=0.7018  (0.38 ms/requête)
+paris6k   resnet50            euclidienne mAP=0.2691  P@10=0.6820  (0.41 ms/requête)
+paris6k   squeezenet1_1       cosinus     mAP=0.2245  P@10=0.6443  (0.47 ms/requête)
+paris6k   squeezenet1_1       euclidienne mAP=0.2059  P@10=0.6184  (0.54 ms/requête)
+paris6k   vgg16               cosinus     mAP=0.2666  P@10=0.6557  (0.50 ms/requête)
+paris6k   vgg16               euclidienne mAP=0.2251  P@10=0.6256  (0.57 ms/requête)
+
+[OK] Étape 4 terminée (25 couple(s) évalué(s)) -> C:\rahma\IRDM\MiniProject\script\results

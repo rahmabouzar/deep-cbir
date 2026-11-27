@@ -1,4 +1,8 @@
-# Icônes (Streamline Flex Pop)
+# Icônes personnalisées (optionnel)
+
+Par défaut l'application utilise les icônes **Phosphor** (licence MIT) du dossier `assets/phosphor/`, conformes à SKILL.md.
+Un fichier du même nom placé ici les remplace.
+
 
 Déposez ici des fichiers **SVG** exportés depuis Streamline (set *Flex Pop*, licence à vérifier : le set complet est « Premium »,
 une version *Flex Pop – Free* existe sur le site). Chaque fichier doit porter l'un des noms ci-dessous ; s'il est absent,

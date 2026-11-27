@@ -1,5 +1,8 @@
 """Application web (Streamlit) – CBIR par réseaux profonds. Lancer : python -m streamlit run app.py"""
 import json
+import os
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -10,9 +13,11 @@ from PIL import Image
 import config as C
 import ui
 from common import (load_manifest, load_features, class_names, top_k, load_rgb,
-                    available_pairs)
+                    available_pairs, pairwise, vecteur_image)
+import recherche_eval as E
+from dialogue import choisir_image
 
-st.set_page_config(page_title="DeepCBIR · IRDM", page_icon=":material/image_search:", layout="wide")
+st.set_page_config(page_title="DeepCBIR, IRDM", page_icon=Image.open(ui.ROOT / "assets" / "favicon.png"), layout="wide")
 ui.inject_css()
 
 
@@ -36,12 +41,6 @@ def manifest(ds): return load_manifest(ds)
 def feats(ds, m): return load_features(ds, m)
 
 
-@st.cache_resource
-def modele(m):
-    from common import build_model
-    return build_model(m)
-
-
 nom_ds = lambda d: C.DATASETS[d]["label"]
 nom_m = lambda m: C.MODELS[m][0]
 G, PC, PR, ST = (lire_csv("metrics_global.csv"), lire_csv("metrics_par_classe.csv"),
@@ -51,13 +50,24 @@ DSS = sorted({d for d, _ in pairs}, key=list(C.DATASETS).index)
 MODS = [m for m in C.MODELS if m in {m for _, m in pairs}]
 
 
+def etat_vide():
+    ui.empty_state("Aucun résultat à afficher",
+                   "Cette page lit les fichiers produits par les étapes 1 à 4 du projet. Exécutez ces étapes une fois, puis rechargez la page.",
+                   [("Préparer", "python etape1_preparation.py"), ("Extraire", "python etape2_extraction.py"),
+                    ("Rechercher", "python etape3_recherche.py"), ("Évaluer", "python etape4_evaluation.py")])
+
+
 def besoin_resultats():
-    """Les pages de résultats exigent les étapes 1 à 4 ; sinon message et arrêt de la page."""
+    """Les pages de résultats exigent les étapes 1 à 4 ; sinon vue de démarrage et arrêt de la page."""
     if not pairs or G is None:
-        ui.page_header("Résultats indisponibles")
-        st.warning("Aucune caractéristique extraite ou aucun résultat évalué. Lancer les étapes 1 à 4 (voir README).",
-                   icon=":material/warning:")
+        ui.page_header("Résultats indisponibles", "Les caractéristiques extraites ou les métriques évaluées sont introuvables.", icon="bars", tint="orange")
+        etat_vide()
         st.stop()
+
+
+def pairwise_row(F, qvec, metric, idx):
+    """Distances de la requête aux images d'indices idx."""
+    return pairwise(qvec[None, :], F[idx], metric)[0]
 
 
 def choisir_ds(key="ds"):
@@ -66,12 +76,12 @@ def choisir_ds(key="ds"):
 
 # ------------------------------------------------------------------ Accueil
 def page_accueil():
-    ui.hero("Recherche d'images par le contenu",
-            "Descripteurs extraits de réseaux convolutifs pré-entraînés, comparaison cosinus / euclidienne, "
-            "évaluation par courbes Précision-Rappel et mAP.",
+    ui.hero("Recherche d'images<br>par le contenu",
+            "Descripteurs extraits de réseaux convolutifs préentraînés, comparaison cosinus et euclidienne, "
+            "évaluation par courbes de précision et de rappel et mAP.",
             pills=[nom_m(m) for m in MODS] or ["SqueezeNet", "ResNet", "VGG"])
     if not pairs:
-        st.warning("Aucune caractéristique extraite. Lancer les étapes 1 à 4 (voir README).", icon=":material/warning:")
+        etat_vide()
         return
     cards = [dict(label="Bases", value=len(DSS), icon="database", tint="blue"),
              dict(label="Modèles", value=len(MODS), icon="layers", tint="purple"),
@@ -108,47 +118,244 @@ def page_experience():
 
 
 # ------------------------------------------------------------------ Recherche
+def _ouvrir_dialogue(dossier):
+    """Ouvre la boîte de dialogue native, mémorise le fichier et sélectionne la base qui le contient."""
+    chemin = choisir_image(dossier)
+    if chemin is None:
+        st.session_state["dlg_indispo"] = True
+    elif chemin:
+        st.session_state["req_path"] = chemin
+        st.session_state["dlg_indispo"] = False
+        st.session_state.pop("ds_auto", None)
+        for d in DSS:                                              # l'image vient peut être d'une autre base que celle affichée
+            if _position_dans_base(manifest(d), chemin) is not None:
+                if st.session_state.get("ds") != d:
+                    st.session_state["ds"] = d
+                    st.session_state["ds_auto"] = d
+                break
+
+
+def _choisir_idx(i):
+    st.session_state["req_idx"] = i
+
+
+def _position_dans_base(df, chemin):
+    """Indice de l'image dans la base si ce fichier en fait partie (comparaison des chemins), sinon None."""
+    cible = os.path.normcase(os.path.abspath(chemin))
+    chemins = df.path.map(lambda q: os.path.normcase(os.path.abspath(q))).values
+    hit = np.flatnonzero(chemins == cible)
+    return int(hit[0]) if len(hit) else None
+
+
 def page_recherche():
-    ui.page_header("Recherche d'images similaires", icon="search", tint="blue", subtitle="Choisissez une image requête (dans la base ou téléversée) et comparez "
-                   "les K images les plus proches pour chaque mesure de similarité.")
+    ui.page_header("Recherche d'images similaires", icon="search", tint="teal",
+                   subtitle="Choisissez l'image requête avec une boîte de dialogue ou parmi les images de la base, "
+                            "comparez les K images les plus proches et mesurez la précision de la recherche.")
     if not pairs:
         besoin_resultats()
     ds = choisir_ds(); df = manifest(ds)
     ms = [m for d, m in pairs if d == ds]
     model = st.sidebar.selectbox("Modèle", ms, format_func=nom_m)
     k = st.sidebar.slider("Nombre de résultats (K)", 1, 20, 10)
-    mode = st.radio("Image requête", ["Choisir dans la base", "Téléverser une image"], horizontal=True)
-    F = feats(ds, model); q_idx, qvec, qimg = None, None, None
-    if mode == "Choisir dans la base":
-        cls = st.selectbox("Classe", class_names(df))
+    noms = dict(zip(df.label.astype(int), df.class_name))
+    inverse = {v: k_ for k_, v in noms.items()}
+    F = feats(ds, model)
+    classes = list(class_names(df))
+
+    # ---------------------------------------------------- choix de l'image requête
+    mode = st.radio("Image requête", ["dialogue", "base", "upload"], horizontal=True, key="req_mode",
+                    format_func=lambda m: {"dialogue": "Boîte de dialogue", "base": "Parcourir la base",
+                                           "upload": "Téléverser dans le navigateur"}[m])
+    q_idx, qvec, qimg, qlab, hors_base = None, None, None, None, False
+
+    if mode == "dialogue":
+        b, t = st.columns([1, 3])
+        b.button("Parcourir les fichiers", type="primary", on_click=_ouvrir_dialogue, args=(str(C.DATA_DIR),))
+        chemin = st.session_state.get("req_path")
+        if st.session_state.get("dlg_indispo"):
+            t.warning("La boîte de dialogue ne peut pas s'ouvrir sur ce serveur (pas d'écran, ou tkinter absent). "
+                      "Utilisez « Parcourir la base » ou « Téléverser dans le navigateur ».")
+        elif chemin:
+            t.markdown(f"Fichier choisi : **{Path(chemin).name}**  \n{chemin}")
+            if st.session_state.get("ds_auto") == ds:
+                t.info(f"Cette image appartient à la base {nom_ds(ds)} : elle a été sélectionnée automatiquement.")
+        else:
+            t.info("Cliquez sur « Parcourir les fichiers » : une fenêtre s'ouvre pour choisir l'image requête.")
+        if not chemin or not Path(chemin).exists():
+            if chemin:
+                st.error("Ce fichier est introuvable. Choisissez un autre fichier.")
+            return
+        try:
+            qimg = Image.open(chemin).convert("RGB")
+        except Exception as e:
+            st.error(f"Image illisible : {e}")
+            return
+        pos = _position_dans_base(df, chemin)
+        if pos is not None:
+            q_idx = pos; qvec = F[pos]; qlab = int(df.label.values[pos])
+
+    elif mode == "base":
+        cls = st.selectbox("Classe", classes)
         sub = df[df.class_name == cls]
-        pos = st.slider("Image n°", 0, len(sub) - 1, 0)
-        q_idx = int(sub.index[pos]); qvec = F[q_idx]; qimg = load_rgb(df.path[q_idx])
+        if st.session_state.get("req_idx") not in set(df.index):
+            st.session_state["req_idx"] = int(sub.index[0])
+        npages = max(1, -(-len(sub) // 12))
+        pg = st.number_input("Page", 1, npages, 1) if npages > 1 else 1
+        cols = st.columns(6)
+        for j, i in enumerate(sub.index[(pg - 1) * 12: pg * 12]):
+            with cols[j % 6]:
+                st.image(ui.vignette(df.path[i]), width="stretch")
+                if i == st.session_state["req_idx"]:
+                    st.caption("**Requête choisie**")
+                else:
+                    st.button("Choisir", key=f"pick_{i}", on_click=_choisir_idx, args=(int(i),))
+        q_idx = int(st.session_state["req_idx"]); qvec = F[q_idx]; qimg = load_rgb(df.path[q_idx]); qlab = int(df.label[q_idx])
+
     else:
-        up = st.file_uploader("Image (jpg/png)", type=["jpg", "jpeg", "png"])
-        if up:
-            try:
-                import torch
-                from common import get_transform
-                qimg = Image.open(up).convert("RGB")
-                with torch.inference_mode():
-                    qvec = modele(model)(get_transform()(qimg)[None]).numpy()[0]
-            except Exception as e:
-                st.error(f"Extraction impossible (PyTorch installé ?) : {e}", icon=":material/error:")
-    if qvec is not None:
-        c0, c1 = st.columns([1, 5]); c0.image(qimg, caption="Requête", width=160)
-        if q_idx is not None:
-            c1.markdown(f"**Classe réelle :** {df.class_name[q_idx]}")
+        up = st.file_uploader("Image (jpg ou png)", type=["jpg", "jpeg", "png"])
+        if not up:
+            return
+        qimg = Image.open(up).convert("RGB")
+
+    if qvec is None:                       # image hors de la base affichée : extraction du descripteur
+        try:
+            qvec = vecteur_image(model, qimg)
+        except Exception as e:
+            st.error(f"Extraction impossible, PyTorch doit être installé : {e}")
+            return
+        d0 = pairwise(qvec[None, :], F, "cosinus")[0]; i0 = int(np.argmin(d0))     # même image déjà présente dans la base ?
+        if np.linalg.norm(F[i0] - qvec) <= 1e-3 * max(float(np.linalg.norm(qvec)), 1e-12):
+            q_idx = i0; qlab = int(df.label.values[i0])
+            st.info("Cette image fait partie de la base : elle est exclue des résultats et sa classe est connue.")
+        else:
+            hors_base = True
+            att = st.selectbox("Classe attendue (facultatif, pour calculer la vraie précision)", ["Aucune"] + classes)
+            if att != "Aucune":
+                qlab = int(df.label[df.class_name == att].iloc[0])
+
+    # ---------------------------------------------------- classement et mesures
+    rangs = {m: E.classement(F, qvec, m, q_idx) for m in C.METRICS}               # classement complet de la base
+    pred, conf = E.vote(df.label.values[rangs[C.METRICS[0]][:k]], noms)
+    estime = qlab is None                                                          # pas de classe connue : référence = classe prédite
+    ref = qlab if qlab is not None else inverse[pred]
+    rel = {m: df.label.values[rangs[m]] == ref for m in C.METRICS}
+    mes = {m: E.metriques(rel[m], k) for m in C.METRICS}
+    SIM, DIF = ":green[**Similaire**]", ":red[**Différente**]"
+
+    c0, c1 = st.columns([1, 5]); c0.image(qimg, caption="Requête", width=160)
+    if qlab is not None:
+        c1.markdown(f"**Classe {'attendue' if hors_base else 'réelle'} :** {noms[qlab]}")
+    c1.markdown(f"**Classe prédite par vote des {k} voisins :** {pred}, confiance {conf:.0%}"
+                + ("" if qlab is None else (" : :green[**correct**]" if pred == noms[qlab] else " : :red[**incorrect**]")))
+    c1.markdown(f"{SIM} : classe {noms[ref]}, {DIF} : autre classe.")
+    m0 = C.METRICS[0]
+    nom_p = f"Cohérence@{k}" if estime else f"Précision@{k}"
+    ui.stats([dict(label=f"{nom_p} ({m0})", value=f"{mes[m0]['P']:.2f}", sub=f"{mes[m0]['hits']} sur {k} similaires", icon="target", tint="green"),
+              dict(label=f"Rappel@{k}", value=f"{mes[m0]['R']:.2f}", sub=f"sur {mes[m0]['nrel']} images de la classe", icon="grid", tint="teal"),
+              dict(label="AP sur le classement complet", value=f"{mes[m0]['AP']:.3f}", icon="bars", tint="purple"),
+              dict(label="Premier résultat similaire", value=f"rang {mes[m0]['premier']}", icon="search", tint="orange")])
+    if estime:
+        st.caption("Aucune classe attendue : la référence est la classe prédite par vote. Ces valeurs mesurent la cohérence des résultats, "
+                   "pas une vraie précision. Choisissez la classe attendue pour obtenir la précision réelle.")
+
+    t1, t2, t3, t4 = st.tabs(["Résultats", "Précision et rappel", "Consensus des modèles", "Robustesse"])
+
+    with t1:
         for metric in C.METRICS:
-            idx, dist = top_k(F, qvec, metric, k, exclude=q_idx)
-            ok = (df.label.values[idx] == df.label[q_idx]) if q_idx is not None else None
-            st.subheader(metric.capitalize() + (f" · {int(ok.sum())}/{k} pertinentes" if ok is not None else ""))
+            idx = rangs[metric][:k]
+            dist = pairwise_row(F, qvec, metric, idx)
+            ok = rel[metric][:k]
+            st.subheader(f"{metric.capitalize()} : {int(ok.sum())} similaires sur {k}")
             cols = st.columns(min(k, 5))
             for j, (i, d) in enumerate(zip(idx, dist)):
                 col = cols[j % 5]
-                col.image(load_rgb(df.path[i]), width="stretch")
-                tag = "" if ok is None else (":green[Pertinente] · " if ok[j] else ":red[Non pertinente] · ")
-                col.caption(f"{tag}{df.class_name[i]} · d={d:.3f}")
+                col.image(ui.vignette(df.path[i]), width="stretch")
+                col.caption(f"{SIM if ok[j] else DIF} · {df.class_name[i]} · d={d:.3f}")
+
+    with t2:
+        tab = pd.DataFrame({m.capitalize(): {f"{nom_p}": mes[m]["P"], f"Rappel@{k}": mes[m]["R"], "AP": mes[m]["AP"],
+                                             "Précision à R": mes[m]["RPrec"], "Rang du premier similaire": mes[m]["premier"],
+                                             f"Similaires dans les {k} premiers": mes[m]["hits"]} for m in C.METRICS}).T
+        st.dataframe(tab.style.format({c: "{:.3f}" for c in tab.columns[:4]} | {tab.columns[4]: "{:.0f}", tab.columns[5]: "{:.0f}"}),
+                     width="stretch")
+        st.caption("L'AP et la précision à R sont calculées sur le classement complet de la base, comme le mAP des pages de résultats. "
+                   "La précision à R est la précision au rang égal au nombre d'images de la classe.")
+        g1, g2 = st.columns(2)
+        f1, f2 = go.Figure(), go.Figure()
+        for m in C.METRICS:
+            p, r, pp = E.courbes(rel[m])
+            f1.add_scatter(x=list(range(1, len(p) + 1)), y=p, mode="lines+markers", name=m.capitalize())
+            f2.add_scatter(x=r, y=pp, mode="lines+markers", name=m.capitalize())
+        f1.update_layout(title="Précision en fonction du rang", xaxis_title="Rang", yaxis_title="Précision au rang", yaxis_range=[0, 1.02])
+        f2.update_layout(title="Courbe précision et rappel de cette requête", xaxis_title="Rappel", yaxis_title="Précision",
+                         xaxis_range=[0, 1.02], yaxis_range=[0, 1.02])
+        with g1: ui.show(f1, height=420)
+        with g2: ui.show(f2, height=420)
+
+    with t3:
+        if len(ms) < 2:
+            st.info("Il faut au moins deux modèles extraits pour cette base.")
+        else:
+            st.markdown("Les différents modèles retrouvent ils les mêmes images ? Une **fusion RRF** (Reciprocal Rank Fusion) combine leurs classements "
+                        "et montre si le consensus fait mieux que chaque modèle seul.")
+            met_c = st.radio("Mesure de similarité", C.METRICS, horizontal=True, key="met_c")
+            try:
+                res = {}
+                for m in ms:
+                    Fm = feats(ds, m)
+                    res[m] = E.classement(Fm, Fm[q_idx] if q_idx is not None else vecteur_image(m, qimg), met_c, q_idx)
+            except Exception as e:
+                st.error(f"Extraction impossible, PyTorch doit être installé : {e}")
+                res = None
+            if res:
+                res_f = dict(res); res_f["Fusion RRF"] = E.fusion_rrf([res[m] for m in ms])
+                rows = []
+                for m, r in res_f.items():
+                    x = E.metriques(df.label.values[r] == ref, k)
+                    rows.append({"Modèle": nom_m(m) if m in C.MODELS else m, nom_p: x["P"], "AP": x["AP"], "Précision à R": x["RPrec"]})
+                d = pd.DataFrame(rows)
+                fig = px.bar(d.melt(id_vars="Modèle", var_name="Mesure", value_name="Valeur"), x="Modèle", y="Valeur", color="Mesure",
+                             barmode="group", range_y=[0, 1.05], title="Modèles seuls et fusion RRF")
+                ui.show(ui.facets(fig, tickangle=0), height=400)
+                top = {m: set(map(int, res[m][:k])) for m in ms}
+                J = pd.DataFrame([[E.jaccard(res[a][:k], res[b][:k]) for b in ms] for a in ms], index=[nom_m(m) for m in ms], columns=[nom_m(m) for m in ms])
+                hm = px.imshow(J, text_auto=".2f", zmin=0, zmax=1, color_continuous_scale="Blues", title=f"Accord entre modèles (Jaccard des {k} premiers résultats)")
+                ui.category_axes(hm, x=J.columns, y=J.index)
+                ui.show(hm, height=380)
+                commun = set.intersection(*top.values())
+                st.caption(f"{len(commun)} image(s) sont retrouvées parmi les {k} premiers résultats par tous les modèles.")
+                if commun:
+                    cc = st.columns(min(len(commun), 6))
+                    for col, i in zip(cc, sorted(commun)[:6]):
+                        col.image(ui.vignette(df.path[i]), width="stretch"); col.caption(df.class_name[i])
+
+    with t4:
+        st.markdown("L'image requête est dégradée (rotation, flou, bruit, compression) puis cherchée à nouveau : "
+                    "un bon descripteur garde une précision stable.")
+        met_r = st.radio("Mesure de similarité", C.METRICS, horizontal=True, key="met_r")
+        pert = E.perturbations(qimg)
+        choix = st.multiselect("Perturbations", list(pert), default=list(pert))
+        if st.button("Lancer le test de robustesse", type="primary") and choix:
+            try:
+                rows = [dict(Perturbation="Image originale", **E.metriques(df.label.values[E.classement(F, qvec, met_r, q_idx)] == ref, k))]
+                for nm in choix:
+                    v = vecteur_image(model, pert[nm])
+                    rows.append(dict(Perturbation=nm, **E.metriques(df.label.values[E.classement(F, v, met_r, q_idx)] == ref, k)))
+            except Exception as e:
+                st.error(f"Extraction impossible, PyTorch doit être installé : {e}")
+            else:
+                d = pd.DataFrame(rows)
+                d["Perte"] = d.iloc[0]["P"] - d["P"]
+                fig = px.bar(d.melt(id_vars="Perturbation", value_vars=["P", "AP"], var_name="Mesure", value_name="Valeur")
+                             .replace({"P": nom_p}), x="Perturbation", y="Valeur", color="Mesure", barmode="group",
+                             range_y=[0, 1.05], title=f"Robustesse : {nom_m(model)}, {met_r}")
+                ui.show(ui.facets(fig, tickangle=-30), height=440)
+                st.dataframe(d.rename(columns={"P": nom_p, "premier": "Rang du premier similaire", "Perte": f"Perte de {nom_p.lower()}"})
+                             [["Perturbation", nom_p, "AP", f"Perte de {nom_p.lower()}", "Rang du premier similaire"]],
+                             width="stretch", hide_index=True)
+                cols = st.columns(5)
+                for n_, nm in enumerate(choix):
+                    cols[n_ % 5].image(pert[nm], caption=nm, width="stretch")
 
 
 # ---------------------------------------------------------------- Résultats globaux
@@ -159,7 +366,7 @@ def page_resultats():
     met = st.sidebar.multiselect("Métrique", C.METRICS, default=C.METRICS)
     bases = st.sidebar.multiselect("Bases", DSS, default=DSS, format_func=nom_ds)
     if not met or not bases:
-        st.info("Sélectionnez au moins une métrique et une base dans la barre latérale.", icon=":material/info:"); return
+        st.info("Sélectionnez au moins une métrique et une base dans la barre latérale."); return
     d = G[G.metrique.isin(met) & G.dataset.isin(bases)]
     wrap = 3 if len(bases) > 3 else len(bases)
     nrows = -(-len(bases) // wrap)
@@ -172,14 +379,13 @@ def page_resultats():
                   facet_col_wrap=wrap, facet_row_spacing=0.18, title=f"Précision@K ({met[0]})", labels={"modele": "Modèle"})
     ui.show(ui.facets(fig, tickangle=0), height=300 * nrows + 110)
     st.dataframe(d.drop(columns=["dataset", "model"]), width="stretch", hide_index=True)
-    st.download_button("Télécharger (CSV)", G.to_csv(index=False).encode("utf-8"), "metrics_global.csv",
-                       icon=":material/download:")
+    st.download_button("Télécharger (CSV)", G.to_csv(index=False).encode("utf-8"), "metrics_global.csv")
 
 
 # ---------------------------------------------------------------- Courbes PR
 def page_courbes():
     besoin_resultats()
-    ui.page_header("Courbes Précision-Rappel", "Moyenne sur toutes les requêtes de la base.", icon="curve", tint="teal")
+    ui.page_header("Courbes précision et rappel", "Moyenne sur toutes les requêtes de la base.", icon="curve", tint="green")
     ds = choisir_ds(); met = st.sidebar.radio("Métrique", C.METRICS)
     fig = go.Figure()
     for m in MODS:
@@ -197,7 +403,7 @@ def page_classes():
     ds = choisir_ds(); met = st.sidebar.radio("Métrique", C.METRICS)
     sub = PC[(PC.dataset == ds) & (PC.metrique == met)]
     if sub.empty:
-        st.info("Aucun résultat par classe pour cette base et cette métrique.", icon=":material/info:"); return
+        st.info("Aucun résultat par classe pour cette base et cette métrique."); return
     piv = sub.assign(classe=sub.classe.astype(str)).pivot_table(index="classe", columns="model", values="AP", aggfunc="mean")
     piv = piv[[m for m in MODS if m in piv.columns]]
     piv.columns = [nom_m(c) for c in piv.columns]
@@ -243,7 +449,7 @@ def page_confusion():
     met = st.sidebar.radio("Métrique", C.METRICS)
     f = C.CONF_DIR / f"{ds}__{model}__{met}.npy"
     if not f.exists():
-        st.info("Matrice non calculée pour cette combinaison (relancer l'étape 4).", icon=":material/info:"); return
+        st.info("Matrice non calculée pour cette combinaison (relancer l'étape 4)."); return
     M = np.load(f); names = [str(x) for x in class_names(manifest(ds))]
     fig = px.imshow(M, x=names, y=names, color_continuous_scale="Purples",
                     labels=dict(x="Classe retrouvée", y="Classe requête", color="Part"),
@@ -290,17 +496,17 @@ def page_croisees():
 # ------------------------------------------------------------------ Navigation
 ui.sidebar_brand()
 nav = st.navigation({
-    "Vue d'ensemble": [st.Page(page_accueil, title="Accueil", icon=":material/home:", url_path="accueil", default=True)],
+    "Vue d'ensemble": [st.Page(page_accueil, title="Accueil", url_path="accueil", default=True)],
     "Expérimentation": [
-        st.Page(page_experience, title="Expérience sur échantillon", icon=":material/science:", url_path="experience"),
-        st.Page(page_recherche, title="Recherche d'images", icon=":material/image_search:", url_path="recherche"),
+        st.Page(page_experience, title="Expérience sur échantillon", url_path="experience"),
+        st.Page(page_recherche, title="Recherche d'images", url_path="recherche"),
     ],
     "Résultats": [
-        st.Page(page_resultats, title="Résultats globaux", icon=":material/bar_chart:", url_path="resultats"),
-        st.Page(page_courbes, title="Courbes Précision-Rappel", icon=":material/show_chart:", url_path="courbes"),
-        st.Page(page_classes, title="Comparaison par classe", icon=":material/grid_view:", url_path="classes"),
-        st.Page(page_confusion, title="Matrices de confusion", icon=":material/table_chart:", url_path="confusion"),
-        st.Page(page_croisees, title="Comparaisons croisées", icon=":material/compare_arrows:", url_path="croisees"),
+        st.Page(page_resultats, title="Résultats globaux", url_path="resultats"),
+        st.Page(page_courbes, title="Courbes précision et rappel", url_path="courbes"),
+        st.Page(page_classes, title="Comparaison par classe", url_path="classes"),
+        st.Page(page_confusion, title="Matrices de confusion", url_path="confusion"),
+        st.Page(page_croisees, title="Comparaisons croisées", url_path="croisees"),
     ],
 })
 nav.run()

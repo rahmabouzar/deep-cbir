@@ -151,3 +151,16 @@ def top_k(F: np.ndarray, qvec: np.ndarray, metric: str, k: int, exclude: int = N
     idx = np.argpartition(d, min(k, len(d) - 1))[:k]
     idx = idx[np.argsort(d[idx])]
     return idx, d[idx]
+
+
+# ------------------------------------------------------------------ Vecteur d'une image isolée (requête téléversée / perturbée)
+_NETS = {}
+
+
+def vecteur_image(model: str, img) -> np.ndarray:
+    """Descripteur d'une image PIL avec le modèle `model` (PyTorch requis ; le réseau est chargé une seule fois)."""
+    import torch
+    if model not in _NETS:
+        _NETS[model] = build_model(model)
+    with torch.inference_mode():
+        return _NETS[model](get_transform()(img.convert("RGB"))[None]).float().cpu().numpy()[0]

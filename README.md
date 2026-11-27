@@ -75,7 +75,6 @@ Pick a database → *Tirer l'échantillon* (random classes + random images, prev
 columns = the drawn classes (+ « Toutes classes »). Corel-1K: its 10 classes; Paris6k: all landmarks; Corel-5K: 10; Corel-10K / CIFAR-100: 20 (10 or 20 selectable).
 Command line: `python experience.py --dataset corel10k --classes 20 --seed 7` (CSV saved in `results/experiences/`).
 
-Manual mode: in the same page choose « ✋ Manuel », pick the classes, tick the images you want (thumbnails, paging, "all / none / n random" buttons per class), click « Valider ma sélection », then « Lancer l'évaluation ».
 
 ## Web interface (updated)
 `python -m streamlit run app.py` — grouped sidebar navigation with Material icons (no emojis): Accueil · Expérience sur échantillon · Recherche d'images ·
@@ -84,6 +83,25 @@ The in-app « Rapport » page was removed (`etape5_rapport.py` still generates `
 Theme: `.streamlit/config.toml` (colors, hidden Deploy toolbar) + `ui.py` (CSS and Plotly style shared by all pages).
 Corel-5K/10K classes are named « 0 », « 1 », … : heatmaps now use categorical axes so class order and labels display correctly.
 
-## Design (Notion-style) and icons
-Colors, radii and typography follow `DESIGN-notion.md` (warm paper background, white cards with hairlines, one blue for actions, sticker colors for icons/charts) — see `ui.py` and `.streamlit/config.toml`.
-Drop Streamline *Flex Pop* SVG files into `assets/icons/` (names in `assets/icons/README.md`); missing files fall back to simple built-in icons.
+## Design system
+Rules come from `SKILL.md` (landing-page-design, part B: Geist font, Tailwind type scale with named text styles, spacing tokens, Tailwind radii,
+no one-sided borders, one motion curve, no Material icons) and the palette from `DESIGN-notion.md`. Everything is defined once in `ui.py`.
+Run `python design_check.py` after any style change: it verifies the generated CSS and the Python sources against those rules (exit code 1 on any violation).
+Icons: `assets/icons/<name>.svg` (your own exports, e.g. Streamline) > `assets/phosphor/<name>.svg` (Phosphor, MIT) > built-in fallback.
+
+## Search page: precision and evaluation tools
+« Recherche d'images » now shows P@K, R@K, AP (full ranking), R-precision, rank of the first relevant image, per-query precision-recall curves,
+the class predicted by K-neighbour vote, a cross-model consensus (Jaccard agreement + RRF fusion) and a robustness test (rotation, crop, blur, noise, JPEG...).
+Logic lives in `recherche_eval.py`. For an uploaded image, pick the expected class to get precision.
+
+## Query image selection (Recherche d'images similaires)
+Three ways to choose the query: **Boîte de dialogue** (native file window opened by `dialogue.py`, tkinter in a separate process),
+**Parcourir la base** (class + thumbnails + « Choisir »), or **Téléverser dans le navigateur**.
+An image that already belongs to the base is detected (by path, or by identical descriptor): it is excluded from its own results and its class is known.
+For any other image, pick the expected class to get precision. The experience page keeps both modes: random draw, and « Je choisis les classes et les images » (class checkboxes, thumbnails, all / none / n random per class).
+
+## Colors and results labels
+Each page has its own main color from the sticker palette (tinted background, buttons, steps, tabs, active menu entry, first chart color): `ui.accent_css`.
+In the search page, results similar to the query class are written in green (« Similaire ») and the others in red (« Différente »).
+Choosing a file from another base (e.g. a Paris6k image while Corel-1K is selected) switches the base automatically.
+Without an expected class, the reference is the class predicted by vote, and the page says so.

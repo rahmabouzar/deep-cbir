@@ -5,7 +5,7 @@
   "dim": 512,
   "params_millions": 11.18,
   "device": "cpu",
-  "temps_inference_s": 120.48,
-  "ms_par_image": 24.097,
+  "temps_inference_s": 190.23,
+  "ms_par_image": 38.045,
   "manifest_md5": "44d973c35b"
 }
