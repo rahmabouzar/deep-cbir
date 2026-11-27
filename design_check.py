@@ -73,11 +73,12 @@ check(not bad, "aucune transition sous 200 ms", ", ".join(bad))
 check(not re.search(r"transition[^;]*\b(width|height|top|left)\b", CSS), "on n'anime ni width, height, top, left")
 check(not re.search(r"\b(ease-in-out|linear|ease)\b[^;]*;", re.sub(r"cubic-bezier\([^)]*\)", "", CSS)) or True, "courbes par défaut du navigateur absentes")
 check("prefers-reduced-motion: reduce" in CSS, "prefers-reduced-motion respecté")
-_all = (Path("app.py").read_text(encoding="utf-8") + Path("page_experience.py").read_text(encoding="utf-8")).replace("show_spinner=False", "")
+FICHIERS_UI = ("app.py", "page_experience.py", "pages_projet.py", "pages_etapes.py", "pages_outils.py")
+_all = "".join(Path(f).read_text(encoding="utf-8") for f in FICHIERS_UI).replace("show_spinner=False", "")
 check("spinner" not in _all and "st.status" not in _all and "st.spinner" not in _all, "pas de roue de chargement (squelettes et barre de progression)")
 
 # B6 icônes + B9 états
-src = {f: Path(f).read_text(encoding="utf-8") for f in ("app.py", "page_experience.py", "ui.py")}
+src = {f: Path(f).read_text(encoding="utf-8") for f in FICHIERS_UI + ("ui.py",)}
 check(not any(":material/" in t for t in src.values()), "aucune icône Material Symbols")
 EMOJI = re.compile("[\U0001F000-\U0001FAFF\u2190-\u21FF\u2600-\u27BF\u2B00-\u2BFF\uFE0F]")
 check(not any(EMOJI.search(t) for t in src.values()), "aucun emoji ni pictogramme dans le code")
@@ -89,9 +90,10 @@ check("@media (max-width: 640px)" in CSS, "adaptation mobile (390 px)")
 # B1 copie : pas de trait d'union dans les textes de l'interface (hors noms propres et identifiants)
 PROPRES = re.compile(r"(Corel-\w+|CIFAR-\d+|ResNet-\d+|VGG-\d+|MobileNetV3-Small|CBIR_DATA_DIR)")
 hy = []
-for f in ("app.py", "page_experience.py"):
+for f in FICHIERS_UI:
     for node in ast.walk(ast.parse(src[f])):
-        if isinstance(node, ast.Constant) and isinstance(node.value, str) and " " in node.value and not re.search(r"[{};<>]|px|data-|\.st", node.value):
+        if (isinstance(node, ast.Constant) and isinstance(node.value, str) and " " in node.value and not re.search(r"[{};<>]|px|data-|\.st", node.value)
+                and not node.value.lstrip().startswith(("python", "pip"))):   # les commandes (python etape2.py --time-limit-min) ne sont pas du texte
             t = PROPRES.sub("", node.value)
             if re.search(r"[A-Za-zÀ-ÿ]-[A-Za-zÀ-ÿ]", t): hy.append(f"{f}: {node.value[:70]}")
 check(not hy, "pas de trait d'union dans les textes (hors noms propres)", " | ".join(hy))

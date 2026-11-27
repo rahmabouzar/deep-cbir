@@ -28,7 +28,7 @@ DATASETS = {
         label="Corel-1K", roots=["Corel-1K"], exts=(".jpg", ".jpeg"),
     ),
     "cifar100": dict(
-        label="CIFAR-100 (test)", roots=["CIFAR100"], find_dir="test",   # dossier TEST trouvé automatiquement
+        label="CIFAR-100", roots=["CIFAR100"], find_dir="test",   # partition TEST (10 000 images) : dossier TEST trouvé automatiquement
         exts=(".png",),
     ),
     "paris6k": dict(

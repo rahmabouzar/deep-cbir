@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 import config as C
-from common import load_manifest, load_features, pairwise
+from common import load_manifest, load_features, pairwise, relabel_G, relabel_ST
 
 nd = lambda d: C.DATASETS[d]["label"]
 nm = lambda m: C.MODELS[m][0]
@@ -19,9 +19,9 @@ def load_results():
         raise SystemExit("\n[ERREUR] Fichier(s) manquant(s) dans results\\ : " + ", ".join(manq) +
                          "\n   -> lancer d'abord : etape1_preparation.py | etape2_extraction.py | etape4_evaluation.py\n")
     r = types.SimpleNamespace()
-    r.G = pd.read_csv(C.RESULTS / "metrics_global.csv"); r.PC = pd.read_csv(C.RESULTS / "metrics_par_classe.csv", dtype={"classe": str})
+    r.G = relabel_G(pd.read_csv(C.RESULTS / "metrics_global.csv")); r.PC = pd.read_csv(C.RESULTS / "metrics_par_classe.csv", dtype={"classe": str})
     r.PR = json.loads((C.RESULTS / "pr_curves.json").read_text(encoding="utf-8"))
-    r.ST = json.loads((C.RESULTS / "etape1_stats.json").read_text(encoding="utf-8"))
+    r.ST = relabel_ST(json.loads((C.RESULTS / "etape1_stats.json").read_text(encoding="utf-8")))
     r.DSS = [d for d in C.DATASETS if d in set(r.G.dataset)]
     r.MODS = [m for m in C.MODELS if m in set(r.G.model) and all(((r.G.dataset == d) & (r.G.model == m)).any() for d in r.DSS)]
     r.MAN = {d: load_manifest(d) for d in r.DSS}

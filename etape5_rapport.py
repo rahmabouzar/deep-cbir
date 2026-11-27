@@ -11,7 +11,7 @@ import pandas as pd
 import markdown
 
 import config as C
-from common import load_manifest, class_names
+from common import load_manifest, class_names, relabel_G, relabel_ST
 
 def _exiger(*noms):
     manq = [n for n in noms if not (C.RESULTS / n).exists()]
@@ -21,10 +21,10 @@ def _exiger(*noms):
 
 
 _exiger("metrics_global.csv", "metrics_par_classe.csv", "pr_curves.json", "etape1_stats.json")
-G = pd.read_csv(C.RESULTS / "metrics_global.csv")
+G = relabel_G(pd.read_csv(C.RESULTS / "metrics_global.csv"))
 PC = pd.read_csv(C.RESULTS / "metrics_par_classe.csv", dtype={"classe": str})
 PR = json.loads((C.RESULTS / "pr_curves.json").read_text(encoding="utf-8"))
-ST = json.loads((C.RESULTS / "etape1_stats.json").read_text(encoding="utf-8"))
+ST = relabel_ST(json.loads((C.RESULTS / "etape1_stats.json").read_text(encoding="utf-8")))
 DSS = list(G.dataset.unique())
 MODS_ALL = [m for m in C.MODELS if m in set(G.model)]
 # seuls les modèles évalués sur TOUTES les bases sont comparés dans les graphiques/tableaux croisés

@@ -105,3 +105,10 @@ Each page has its own main color from the sticker palette (tinted background, bu
 In the search page, results similar to the query class are written in green (« Similaire ») and the others in red (« Différente »).
 Choosing a file from another base (e.g. a Paris6k image while Corel-1K is selected) switches the base automatically.
 Without an expected class, the reference is the class predicted by vote, and the page says so.
+
+## Pages Projet et Étapes (new)
+Sidebar groups **Le projet** (Architecture, Technologies, Formules et calculs) and **Étapes du pipeline** (one results page per script: étape 0 to 4, and 5 to 7).
+Code: `pages_projet.py`, `pages_etapes.py`, helpers in `pages_outils.py`; animated components (pipeline, tree, cards, bars, rank strip) live in `ui.py`.
+Each stage page shows inputs → script → outputs, the real results read from `workdir/` and `results/` (or the command to run if absent) and the real source of the key function.
+Animations use opacity/transform only and stop with `prefers-reduced-motion`. `python design_check.py` also covers the new files.
+The dataset label is now « CIFAR-100 » (partition TEST); results saved with the old label are relabelled on read.

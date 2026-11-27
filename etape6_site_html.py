@@ -15,7 +15,7 @@ from PIL import Image
 
 import config as C
 import analyses as A
-from common import load_manifest, load_features, class_names, top_k, pairwise, load_rgb
+from common import load_manifest, load_features, class_names, top_k, pairwise, load_rgb, relabel_G, relabel_ST
 
 SITE = C.RESULTS / "site"
 for d in ("assets", "thumbs", "img"):
@@ -31,10 +31,10 @@ def _exiger(*noms):
 
 _exiger("metrics_global.csv", "metrics_par_classe.csv", "pr_curves.json", "etape1_stats.json")
 R = A.load_results()
-G = pd.read_csv(C.RESULTS / "metrics_global.csv")
+G = relabel_G(pd.read_csv(C.RESULTS / "metrics_global.csv"))
 PC = pd.read_csv(C.RESULTS / "metrics_par_classe.csv", dtype={"classe": str})
 PR = json.loads((C.RESULTS / "pr_curves.json").read_text(encoding="utf-8"))
-ST = json.loads((C.RESULTS / "etape1_stats.json").read_text(encoding="utf-8"))
+ST = relabel_ST(json.loads((C.RESULTS / "etape1_stats.json").read_text(encoding="utf-8")))
 DSS = [d for d in C.DATASETS if d in set(G.dataset)]
 MODS = [m for m in C.MODELS if m in set(G.model)]
 nd = lambda d: C.DATASETS[d]["label"]

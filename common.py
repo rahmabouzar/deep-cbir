@@ -153,6 +153,25 @@ def top_k(F: np.ndarray, qvec: np.ndarray, metric: str, k: int, exclude: int = N
     return idx, d[idx]
 
 
+# ------------------------------------------------------------------ Libellés des anciens résultats
+def relabel_G(G):
+    """metrics_global.csv garde le libellé écrit au moment de l'évaluation (l'étape 4 est incrémentale) :
+    on le remplace par le libellé actuel de config.py à la lecture."""
+    if G is not None and "dataset" in G.columns and "dataset_nom" in G.columns:
+        G = G.copy()
+        G["dataset_nom"] = G["dataset"].map(lambda d: C.DATASETS[d]["label"] if d in C.DATASETS else d)
+    return G
+
+
+def relabel_ST(ST):
+    """Même chose pour etape1_stats.json (champ « nom »)."""
+    if ST:
+        for k, s in ST.items():
+            if k in C.DATASETS and isinstance(s, dict):
+                s["nom"] = C.DATASETS[k]["label"]
+    return ST
+
+
 # ------------------------------------------------------------------ Vecteur d'une image isolée (requête téléversée / perturbée)
 _NETS = {}
 

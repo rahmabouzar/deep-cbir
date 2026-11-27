@@ -1,6 +1,7 @@
 """Application web (Streamlit) – CBIR par réseaux profonds. Lancer : python -m streamlit run app.py"""
 import json
 import os
+import types
 from pathlib import Path
 
 import numpy as np
@@ -13,8 +14,10 @@ from PIL import Image
 import config as C
 import ui
 from common import (load_manifest, load_features, class_names, top_k, load_rgb,
-                    available_pairs, pairwise, vecteur_image)
+                    available_pairs, pairwise, vecteur_image, relabel_G, relabel_ST)
 import recherche_eval as E
+import pages_etapes
+import pages_projet
 from dialogue import choisir_image
 
 st.set_page_config(page_title="DeepCBIR, IRDM", page_icon=Image.open(ui.ROOT / "assets" / "favicon.png"), layout="wide")
@@ -43,11 +46,13 @@ def feats(ds, m): return load_features(ds, m)
 
 nom_ds = lambda d: C.DATASETS[d]["label"]
 nom_m = lambda m: C.MODELS[m][0]
-G, PC, PR, ST = (lire_csv("metrics_global.csv"), lire_csv("metrics_par_classe.csv"),
-                 lire_json("pr_curves.json"), lire_json("etape1_stats.json"))
+G, PC, PR, ST = (relabel_G(lire_csv("metrics_global.csv")), lire_csv("metrics_par_classe.csv"),
+                 lire_json("pr_curves.json"), relabel_ST(lire_json("etape1_stats.json")))
 pairs = available_pairs()
 DSS = sorted({d for d, _ in pairs}, key=list(C.DATASETS).index)
 MODS = [m for m in C.MODELS if m in {m for _, m in pairs}]
+CTX = types.SimpleNamespace(G=G, PC=PC, PR=PR, ST=ST, pairs=pairs, DSS=DSS, MODS=MODS,
+                            manifest=manifest, feats=feats, nom_ds=nom_ds, nom_m=nom_m)   # lu par pages_projet.py et pages_etapes.py
 
 
 def etat_vide():
@@ -80,6 +85,7 @@ def page_accueil():
             "Descripteurs extraits de réseaux convolutifs préentraînés, comparaison cosinus et euclidienne, "
             "évaluation par courbes de précision et de rappel et mAP.",
             pills=[nom_m(m) for m in MODS] or ["SqueezeNet", "ResNet", "VGG"])
+    ui.pipe(pages_projet.ETAPES_CARTES[:5], cyc=6000)
     if not pairs:
         etat_vide()
         return
@@ -493,10 +499,35 @@ def page_croisees():
                            labels={"ms_extraction_img": "ms / image", "dataset_nom": "Base"}))
 
 
+# ------------------------------------------------------------------ Pages du projet et des étapes (pages_projet.py, pages_etapes.py)
+def page_architecture(): pages_projet.architecture(CTX)
+def page_technologies(): pages_projet.technologies(CTX)
+def page_formules(): pages_projet.formules(CTX)
+def page_etape0(): pages_etapes.etape0(CTX)
+def page_etape1(): pages_etapes.etape1(CTX)
+def page_etape2(): pages_etapes.etape2(CTX)
+def page_etape3(): pages_etapes.etape3(CTX)
+def page_etape4(): pages_etapes.etape4(CTX)
+def page_livrables(): pages_etapes.livrables(CTX)
+
+
 # ------------------------------------------------------------------ Navigation
 ui.sidebar_brand()
 nav = st.navigation({
     "Vue d'ensemble": [st.Page(page_accueil, title="Accueil", url_path="accueil", default=True)],
+    "Le projet": [
+        st.Page(page_architecture, title="Architecture", url_path="architecture"),
+        st.Page(page_technologies, title="Technologies", url_path="technologies"),
+        st.Page(page_formules, title="Formules et calculs", url_path="formules"),
+    ],
+    "Étapes du pipeline": [
+        st.Page(page_etape0, title="Étape 0 · Planification", url_path="etape0"),
+        st.Page(page_etape1, title="Étape 1 · Préparation", url_path="etape1"),
+        st.Page(page_etape2, title="Étape 2 · Extraction", url_path="etape2"),
+        st.Page(page_etape3, title="Étape 3 · Recherche", url_path="etape3"),
+        st.Page(page_etape4, title="Étape 4 · Évaluation", url_path="etape4"),
+        st.Page(page_livrables, title="Étapes 5 à 7 · Livrables", url_path="livrables"),
+    ],
     "Expérimentation": [
         st.Page(page_experience, title="Expérience sur échantillon", url_path="experience"),
         st.Page(page_recherche, title="Recherche d'images", url_path="recherche"),
